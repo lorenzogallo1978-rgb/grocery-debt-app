@@ -1,0 +1,50 @@
+name: Build APK
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: تحميل المشروع
+        uses: actions/checkout@v3
+
+      - name: تثبيت Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
+
+      - name: تثبيت Java
+        uses: actions/setup-java@v3
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      - name: تثبيت المكتبات
+        run: npm install --legacy-peer-deps
+
+      - name: بناء المشروع
+        run: npm run build
+
+      - name: تثبيت Capacitor
+        run: |
+          npm install -g @capacitor/cli
+          npx cap add android
+          npx cap sync android
+
+      - name: صلاحيات Gradle
+        run: chmod +x android/gradlew
+
+      - name: بناء الـ APK
+        run: |
+          cd android
+          ./gradlew assembleDebug
+
+      - name: رفع الـ APK
+        uses: actions/upload-artifact@v3
+        with:
+          name: app-debug
+          path: android/app/build/outputs/apk/debug/app-debug.apk
