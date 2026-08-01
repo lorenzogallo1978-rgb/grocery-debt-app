@@ -35,6 +35,21 @@ jobs:
           npx cap add android
           npx cap sync android
 
+      - name: إصلاح مشكلة Kotlin المكررة
+        run: |
+          cat >> android/build.gradle << 'EOF'
+
+          allprojects {
+              configurations.all {
+                  resolutionStrategy {
+                      force 'org.jetbrains.kotlin:kotlin-stdlib:1.8.22'
+                      force 'org.jetbrains.kotlin:kotlin-stdlib-jdk7:1.8.22'
+                      force 'org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.8.22'
+                  }
+              }
+          }
+          EOF
+
       - name: صلاحيات Gradle
         run: chmod +x android/gradlew
 
@@ -43,7 +58,7 @@ jobs:
           cd android
           ./gradlew assembleDebug
 
-      - name: رفع الـ APK ✅
+      - name: رفع الـ APK
         uses: actions/upload-artifact@v4
         with:
           name: app-debug
